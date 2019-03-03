@@ -155,6 +155,6 @@ class ax25lib:
                 data = s.recv(1500)
             except socket.error, (value,message):
                 print 'socket.error - ' + message
-            callback(data)
+            callback(self.ax25(data))
             print ""
         s.close()
