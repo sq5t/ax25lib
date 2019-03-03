@@ -8,8 +8,7 @@ def main():
     while True:
         time.sleep(1)
 
-def dane(data):
-    dane = ax25.ax25(data)
+def dane(dane):
     print "Source: ",dane['source']
     print "Destination: ",dane['destination']
     print "VIA: ",dane['via']
