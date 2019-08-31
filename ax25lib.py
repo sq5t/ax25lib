@@ -11,20 +11,24 @@ import threading
 import time
 
 class ax25lib:
-    version = "0.1"
+    version = "0.1.1"
     host = ""
     port = 0
     type = ""
-    def shift_data(self,data,direction,dr=""): # dr: destination or repeated, information needed to know where set bit
+    def shift_data(self,data,direction,dr="",last=""): # dr: destination or repeated, information needed to know where set bit
+        callsign_pattern="[a-zA-Z0-9]{1,3}[0123456789][a-zA-Z0-9]{0,3}[a-zA-Z]"
         if(direction=="rx"):
             return_data = ["" for x in range(10)]
             for x in range(6):
                 return_data[x] = chr(ord(data[x])>>1)
-            ssid_tmp = str((int(hex(ord(data[6])),16) & 15)>>1)
+            ssid_tmp = str((int(hex(ord(data[6])),16) & 30)>>1)
+            tmp_callsign = "".join([x.strip(' ') for x in return_data])
             if(ssid_tmp!="0"):
                 return_data[6] = chr(ord("-"))
                 for x in range(len(ssid_tmp)):
                     return_data[7+x] = ssid_tmp[x]
+            if(str(int(hex(ord(data[6])),16) & 128)=="128" and re.match(callsign_pattern,tmp_callsign)):
+                return_data[9] = "*"
             return_data = [x.strip(' ') for x in return_data]
         elif(direction=="tx"):
             rpt_data = data.split(",")
@@ -99,25 +103,27 @@ class ax25lib:
             packet['via'] = self.shift_data(ax25data,"rx")
         if (ile >= 4):
             ax25data = data[23:23+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile >= 5):
             ax25data = data[30:30+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile >= 6):
             ax25data = data[37:37+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile >= 7):
             ax25data = data[44:44+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile >= 8):
             ax25data = data[51:51+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile >= 9):
             ax25data = data[58:58+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
         if (ile == 10):
             ax25data = data[65:65+7]
-            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx")
+            packet['via'] = packet['via'] + "," + self.shift_data(ax25data,"rx", True)
+        if(packet['via'].count("*") != "0"):
+            packet['via'] = packet['via'].replace("*","",packet['via'].count("*")-1)
         packet['data'] = data[ile*7+4:size-1]
         packet['pid']='\x03';
         packet['control']='\xf0';

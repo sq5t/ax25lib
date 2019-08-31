@@ -18,7 +18,7 @@ def dane(dane):
 
 if __name__ == '__main__':
     # print ax25lib.version
-    ax25 = ax25lib(type="tcp",host="192.168.0.55",port=8001,callback=dane)
+    ax25 = ax25lib(type="tcp",host="127.0.0.1",port=8001,callback=dane)
     # if repeater is WIDEn-n than it need to be written with "-" , for example: "WIDE2-1"
     # ax25.send(source="SQ5T",destination="APSQ5T",rpt="RFONLY",message="}Python test")
     main()
